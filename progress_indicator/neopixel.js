@@ -1,6 +1,25 @@
 var five = require("johnny-five");
 var pixel = require("node-pixel");
 
+var Socket = require("./phoenix.node.js").Socket;
+
+var socket = new Socket("ws://large-marge-server.herokuapp.com/socket", {transport: require('websocket').w3cwebsocket})
+
+socket.connect();
+var channel = socket.channel("largemarge:events", {});
+
+channel.join()
+    .receive("ok", function(resp) {
+          console.log("Boom!")
+        })
+  .receive("error", function(reason) {
+    console.log("Error joining channel");
+  });
+
+channel.on("start", function() {
+  console.log("starting");
+})
+
 var opts = {};
 opts.port = process.argv[2] || "";
 
@@ -25,7 +44,7 @@ function startStep(index) {
   }
 
   for (var i = 0; i < index; i++) {
-    console.log("step " + i);
+    console.log("lighting " + i);
     var p = strip.pixel(i);
     p.color("green");
   }
@@ -47,15 +66,9 @@ board.on("ready", function() {
   strip.on("ready", function() {
     console.log("Strip ready, let's go");
 
-    startStep(4);
+    strip.color("#000");
+  
+    // TODO
 
-    var step = 0;
-    var progress_indicator = setInterval(function() {
-      startStep(step);
-      step++;
-      if (step >= TOTAL_STEP_COUNT) {
-        step = 0;
-      }
-    }, 3000);
   });
 });
