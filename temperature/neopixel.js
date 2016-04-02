@@ -8,22 +8,25 @@ var socket = new Socket("ws://large-marge-server.herokuapp.com/socket", {transpo
 socket.connect();
 var channel = socket.channel("largemarge:events", {});
 
-channel.join()
-  .receive("ok", function(resp) {
+function connect() {
+  channel.join()
+    .receive("ok", function(resp) {
     console.log("Boom!")
   })
   .receive("error", function(reason) {
     console.log("Error joining channel");
   });
 
+  channel.on("settings:changed", function(settings) {
+    var temp = settings.comfortableTemperature;
+    console.log(temp);
+    setTemp(temp);
+  })
+
   channel.on("start", function() {
     console.log("starting");
-//    startStep(2);
 })
-
-// TODO: Respond to more events
-
-
+}
 
 var opts = {};
 opts.port = process.argv[2] || "";
@@ -52,7 +55,7 @@ function setTemp(temp) {
   var c = "#ffffff";
 
   tempMap.forEach(function(value, key) {
-    if (key < temp) {
+    if (key <= temp) {
       c = value;
     }
   }, tempMap)
@@ -85,7 +88,7 @@ board.on("ready", function() {
 
     strip.color("#000");
 
-    setTemp(-30); // TODO: Pull temp from weather message
+    connect();
     strip.show();
   });
 });
