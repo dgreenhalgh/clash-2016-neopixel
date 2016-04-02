@@ -25,7 +25,7 @@ function connect() {
 
   channel.on("start", function() {
     console.log("starting");
-})
+  })
 }
 
 var opts = {};

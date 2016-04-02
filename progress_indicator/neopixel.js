@@ -8,22 +8,43 @@ var socket = new Socket("ws://large-marge-server.herokuapp.com/socket", {transpo
 socket.connect();
 var channel = socket.channel("largemarge:events", {});
 
-channel.join()
+function connect() {
+  channel.join()
     .receive("ok", function(resp) {
-          console.log("Boom!")
-        })
+      console.log("Boom!")
+    })
   .receive("error", function(reason) {
     console.log("Error joining channel");
   });
 
-channel.on("start", function() {
-  console.log("starting");
-  startStep(2);
-})
+  channel.on("start", function() {
+    reset();
+    console.log("starting");
+    startStep(3);
+  })
 
-// TODO: Respond to more events
+  channel.on("fetching_weather", function() {
+    console.log("fetching weather");
+    startStep(4);
+  })
 
+  channel.on("showing_weather", function() {
+    console.log("showing weather");
+    startStep(5);
+  })
 
+  channel.on("setting_outfit", function() {
+    console.log("setting outfit");
+    startStep(9);
+  })
+
+  channel.on("reset", function() {
+    console.log("resetting");
+    reset();
+  })
+}
+
+var currentStep = 0;
 
 var opts = {};
 opts.port = process.argv[2] || "";
@@ -32,6 +53,11 @@ var board = new five.Board(opts);
 var strip = null;
 
 var TOTAL_STEP_COUNT = 10;
+
+function reset() {
+  strip.color("#000");
+  currentStep = 0;
+}
 
 function light(index) {
   strip.color("#000");
@@ -44,11 +70,17 @@ function light(index) {
 function startStep(index) {
   strip.color("#000");
 
-  if (index >= TOTAL_STEP_COUNT) {
+  if (index > TOTAL_STEP_COUNT) {
     return;
   }
 
-  for (var i = 0; i < index; i++) {
+  if (currentStep >= index) {
+    return;
+  }
+
+  currentStep = index;
+
+  for (var i = 0; i <= index; i++) {
     console.log("lighting " + i);
     var p = strip.pixel(i);
     p.color("green");
@@ -72,6 +104,8 @@ board.on("ready", function() {
     console.log("Strip ready, let's go");
 
     strip.color("#000");
+
+    connect();
     strip.show();
   });
 });
