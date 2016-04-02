@@ -18,7 +18,12 @@ channel.join()
 
 channel.on("start", function() {
   console.log("starting");
+  startStep(2);
 })
+
+// TODO: Respond to more events
+
+
 
 var opts = {};
 opts.port = process.argv[2] || "";
@@ -67,8 +72,6 @@ board.on("ready", function() {
     console.log("Strip ready, let's go");
 
     strip.color("#000");
-  
-    // TODO
-
+    strip.show();
   });
 });
